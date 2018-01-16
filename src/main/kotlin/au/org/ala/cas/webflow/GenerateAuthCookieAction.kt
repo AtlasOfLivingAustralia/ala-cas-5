@@ -29,7 +29,7 @@ open class GenerateAuthCookieAction(val ticketRegistrySupport: TicketRegistrySup
         val authentication = this.ticketRegistrySupport.getAuthenticationFrom(ticketGrantingTicket) ?: throw InvalidTicketException(AuthenticationException("No authentication found for ticket " + ticketGrantingTicket), ticketGrantingTicket)
         val email = authentication.principal.id
 
-        alaProxyAuthenticationCookieGenerator.addCookie(WebUtils.getHttpServletRequest(context), WebUtils.getHttpServletResponse(context), email)
+        alaProxyAuthenticationCookieGenerator.addCookie(context, email)
 
         return success()
     }

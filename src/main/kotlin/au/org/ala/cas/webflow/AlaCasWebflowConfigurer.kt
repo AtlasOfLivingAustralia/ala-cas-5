@@ -1,8 +1,10 @@
 package au.org.ala.cas.webflow
 
 import au.org.ala.utils.logger
-import org.apereo.cas.web.flow.AbstractCasWebflowConfigurer
+import org.apereo.cas.configuration.CasConfigurationProperties
 import org.apereo.cas.web.flow.CasWebflowConstants
+import org.apereo.cas.web.flow.configurer.AbstractCasWebflowConfigurer
+import org.springframework.context.ApplicationContext
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.springframework.webflow.engine.ActionState
 import org.springframework.webflow.engine.Flow
@@ -13,8 +15,10 @@ class AlaCasWebflowConfigurer(
         loginFlowDefinitionRegistry: FlowDefinitionRegistry,
         logoutFlowDefinitionRegistry: FlowDefinitionRegistry,
         val generateAuthCookieAction: GenerateAuthCookieAction,
-        val removeAuthCookieAction: RemoveAuthCookieAction) :
-        AbstractCasWebflowConfigurer(flowBuilderServices, loginFlowDefinitionRegistry) {
+        val removeAuthCookieAction: RemoveAuthCookieAction,
+        applicationContext: ApplicationContext,
+        casConfigurationProperties: CasConfigurationProperties) :
+        AbstractCasWebflowConfigurer(flowBuilderServices, loginFlowDefinitionRegistry, applicationContext, casConfigurationProperties) {
 
     init {
         this.logoutFlowDefinitionRegistry = logoutFlowDefinitionRegistry

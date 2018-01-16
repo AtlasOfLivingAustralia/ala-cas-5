@@ -3,6 +3,7 @@ package au.org.ala.cas.thymeleaf
 import au.org.ala.cas.SkinProperties
 import au.org.ala.utils.logger
 import com.github.benmanes.caffeine.cache.Caffeine
+import org.apereo.cas.util.Pac4jUtils
 import org.apereo.cas.web.support.WebUtils
 import org.apereo.inspektr.common.spi.PrincipalResolver
 import org.springframework.webflow.execution.RequestContextHolder
@@ -53,7 +54,7 @@ class AlaTemplateClient(val skinConfig: SkinProperties, val cookieName: String) 
     }
 
     fun isLoggedIn() =
-            RequestContextHolder.getRequestContext()?.let { WebUtils.getCredential(it) != null } ?: (WebUtils.getAuthenticatedUsername() != PrincipalResolver.UNKNOWN_USER)
+            RequestContextHolder.getRequestContext()?.let { WebUtils.getCredential(it) != null } ?: (Pac4jUtils.getPac4jAuthenticatedUsername() != PrincipalResolver.UNKNOWN_USER)
 
 
     /**

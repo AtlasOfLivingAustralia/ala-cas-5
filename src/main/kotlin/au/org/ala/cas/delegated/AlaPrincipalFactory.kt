@@ -34,7 +34,7 @@ class AlaPrincipalFactory(private val principalResolver: PrincipalResolver,
 
         //NOTE: just in case social media gave us email containing Upper case letters
         val emailAddress = email.toLowerCase()
-        val alaCredential = Credential() { -> emailAddress } // SAM conversion
+        val alaCredential = Credential { emailAddress } // SAM conversion
 
         // get the ALA user attributes from the userdetails DB ("userid", "firstname", "lastname", "authority")
         var principal = principalResolver.resolve(alaCredential)

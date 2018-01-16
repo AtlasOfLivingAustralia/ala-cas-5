@@ -14,7 +14,7 @@
     <artifactId>cas</artifactId>
     <packaging>war</packaging>
     <!-- Version should ${cas.version}-${ala.build.version}(-SNAPSHOT)? -->
-    <version>5.1.4-1-SNAPSHOT</version>
+    <version>5.2.1-1-SNAPSHOT</version>
 
     <name>ALA CAS 5</name>
     <description>ALA Central Authentication Service v5</description>
@@ -63,10 +63,12 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>org.apereo.cas.web.CasWebApplication</mainClass>
+                    <mainClass>${mainClassName}</mainClass>
+                    <!--<mainClass>org.apereo.cas.web.CasWebApplication</mainClass>-->
                     <addResources>true</addResources>
                     <classifier>exec</classifier>
-                    <executable>true</executable>
+                    <executable>${isExecutable}</executable>
+                    <!--<executable>true</executable>-->
                 </configuration>
             </plugin>
             <plugin>
@@ -86,6 +88,7 @@
                         <compress>false</compress>
                         <!-- This is in the original CAS overlay but it prevents Spring Boot repackage from running -->
                         <!--<manifestFile>${project.build.directory}/war/work/org.apereo.cas/cas-server-webapp${app.server}/META-INF/MANIFEST.MF</manifestFile>-->
+                        <manifestFile>${manifestFileToUse}</manifestFile>
                     </archive>
                     <overlays>
                         <overlay>
@@ -198,6 +201,23 @@
                 <artifactId>spring-boot-admin-starter-client</artifactId>
                 <version>1.5.3</version>
             </dependency>
+            <!-- manage pac4j into compile scope -->
+            <dependency>
+                <groupId>org.pac4j</groupId>
+                <artifactId>pac4j-core</artifactId>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.pac4j</groupId>
+                <artifactId>pac4j-oauth</artifactId>
+                <scope>compile</scope>
+            </dependency>
+            <!-- manage caffeine into compile scope -->
+            <dependency>
+                <groupId>com.github.ben-manes.caffeine</groupId>
+                <artifactId>caffeine</artifactId>
+                <scope>compile</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -252,6 +272,7 @@
             <groupId>org.apereo.cas</groupId>
             <artifactId>cas-server-support-pac4j-webflow</artifactId>
             <version>${cas.version}</version>
+            <scope>compile</scope>
         </dependency>
         <!-- Allows spring security basic auth for actuator endpoints -->
         <dependency>
@@ -371,15 +392,11 @@
             <artifactId>cas-server-core-web</artifactId>
             <version>${cas.version}</version>
             <scope>provided</scope>
-            <!-- 5.1.2 depends on thymeleaf v2 whereas the war contains v3...
-                 if removing the CAS BOM, add an exclude to ensure that there
-                 aren't 2 versions of Thymeleaf on the classpath otherwise
-                 the Spring Boot Thymeleaf configurer gets confused -->
         </dependency>
         <dependency>
             <groupId>org.apereo.cas</groupId>
             <artifactId>cas-server-security-filter</artifactId>
-            <version>2.0.6</version>
+            <!--<version>2.0.7</version>-->
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -477,27 +494,24 @@
             <scope>compile</scope>
         </dependency>
         <!-- Will be included in CAS 5.2 -->
-        <dependency>
-            <groupId>com.github.ben-manes.caffeine</groupId>
-            <artifactId>caffeine</artifactId>
-            <version>2.5.4</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.github.ben-manes.caffeine</groupId>-->
+            <!--<artifactId>caffeine</artifactId>-->
+            <!--<version>2.5.4</version>-->
+            <!--<scope>compile</scope>-->
+        <!--</dependency>-->
         <!-- Here be webjars -->
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery</artifactId>
-            <version>1.12.4</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery-ui</artifactId>
-            <version>1.12.1</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>jquery-cookie</artifactId>
-            <version>1.4.1-1</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
@@ -513,17 +527,14 @@
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>headjs</artifactId>
-            <version>1.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>font-awesome</artifactId>
-            <version>4.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>zxcvbn</artifactId>
-            <version>4.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
@@ -539,19 +550,24 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test</artifactId>
+            <artifactId>kotlin-test-junit</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <properties>
-        <cas.version>5.1.4</cas.version>
-        <springboot.version>1.5.3.RELEASE</springboot.version>
+        <cas.version>5.2.1</cas.version>
+        <springboot.version>1.5.8.RELEASE</springboot.version>
         <!-- app.server could be -jetty, -undertow, -tomcat, or blank if you plan to provide appserver -->
         <!-- we use blank to create a blank war and spring boot repackage to build an executable jar -->
         <app.server></app.server>
-        <kotlin.version>1.1.50</kotlin.version>
+
+        <mainClassName>org.springframework.boot.loader.WarLauncher</mainClassName>
+        <isExecutable>false</isExecutable>
+        <manifestFileToUse>${project.build.directory}/war/work/org.apereo.cas/cas-server-webapp${app.server}/META-INF/MANIFEST.MF</manifestFileToUse>
+
+        <kotlin.version>1.2.10</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -600,7 +616,39 @@
         </repository>
     </repositories>
 
-    <!--<profiles>-->
+    <profiles>
+        <profile>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <id>exec</id>
+            <properties>
+                <mainClassName>org.apereo.cas.web.CasWebApplication</mainClassName>
+                <isExecutable>true</isExecutable>
+                <manifestFileToUse></manifestFileToUse>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.soebes.maven.plugins</groupId>
+                        <artifactId>echo-maven-plugin</artifactId>
+                        <version>0.3.0</version>
+                        <executions>
+                            <execution>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>echo</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <echos>
+                                <echo>Executable profile to make the generated CAS web application executable.</echo></echos>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <!--<profile>-->
             <!--<activation>-->
                 <!--<activeByDefault>false</activeByDefault>-->
@@ -630,5 +678,5 @@
                 <!--</plugins>-->
             <!--</build>-->
         <!--</profile>-->
-    <!--</profiles>-->
+    </profiles>
 </project>
