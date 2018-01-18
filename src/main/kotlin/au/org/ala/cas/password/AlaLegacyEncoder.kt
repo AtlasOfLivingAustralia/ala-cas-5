@@ -46,7 +46,7 @@ class AlaLegacyEncoder(val salt: String, val base64Encode: Boolean = true) : Pas
             return false
         }
 
-        var ret: Boolean = true
+        var ret = true
         for (i in caa.indices) {
             ret = ret and (caa[i] == cab[i])
         }

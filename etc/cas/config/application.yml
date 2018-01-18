@@ -63,13 +63,11 @@ cas:
   authn:
     jdbc:
       query:
-# Use this for a Tomcat provided JNDI DataSource
-#        - dataSourceName: java:comp/env/jdbc/cas
-        - dataSourceName: jdbccas # For the bcrypt password encoder
-        - dataSourceName: jdbccas # For md5 password encoder
+        - dataSourceName: java:comp/env/jdbccas # For the bcrypt password encoder
+        - dataSourceName: java:comp/env/jdbccas # For md5 password encoder
     attributeRepository:
       jdbc:
-        - dataSourceName: jdbccas
+        - dataSourceName: java:comp/env/jdbccas
     pac4j:
       facebook:
         id: xxxxxxxxxxxxxxx
@@ -87,7 +85,16 @@ cas:
 #      enabled: true
     jdbc:
       validationQuery: /* ping */ SELECT 1
-      dataSourceName: jdbccas
+      dataSourceName: java:comp/env/jdbccas
+  serviceRegistry:
+    initFromJson: true
+    config:
+      location: file:/data/cas/services
+    jpa:
+      ddlAuto: update
+      url: jdbc:mysql://localhost/services
+      user: root
+      password: password
   ticket:
     registry:
       jpa:
@@ -95,22 +102,27 @@ cas:
         url: jdbc:mysql://localhost/casTicketRegistry[?serverTimezone=Australia/Sydney]
         user: username
         password: password
-        signing:
-          key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        encryption:
-          key: xxxxxxxxxxxxxxxx
+        crypto:
+          signing:
+            key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          encryption:
+            key: xxxxxxxxxxxxxxxx
   tgc:
-    encryptionKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    signingKey: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    crypto:
+      encryption:
+        key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      signing:
+        key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   webflow:
-    signing:
-      key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-    encryption:
-      key: xxxxxxxxxxxxxxxx
+    crypto:
+      signing:
+        key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      encryption:
+        key: xxxxxxxxxxxxxxxx
 
 ala:
   userCreator:
     userCreatePassword: random-default-password-here
     jdbc:
-      dataSourceName: jdbccas
+      dataSourceName: java:comp/env/jdbccas
 #      sql: sp_create_user

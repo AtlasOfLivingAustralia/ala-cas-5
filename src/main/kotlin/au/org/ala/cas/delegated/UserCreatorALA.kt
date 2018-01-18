@@ -49,9 +49,8 @@ class UserCreatorALA(
 
         logger.debug("createUser created user id: {}", userId)
 
-        return userId as? Long ?: if (userId is Int) userId as Long else {
+        return userId as? Long ?: (userId as? Int)?.toLong() ?: null.also {
             logger.warn("Couldn't extract userId from {}", result)
-            null
         }
     }
 

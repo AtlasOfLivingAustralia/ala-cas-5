@@ -26,7 +26,7 @@ class AlaPac4jAuthenticationConfiguration {
             passwordEncoder = PasswordEncoderUtils.newPasswordEncoder(alaCasProperties.userCreator.passwordEncoder)
     )
 
-    @Bean(name = arrayOf("clientPrincipalFactory"))
+    @Bean(name = ["clientPrincipalFactory"])
     fun clientPrincipalFactory(
             @Autowired personDirectoryPrincipalResolver: PrincipalResolver,
             @Autowired userCreator: UserCreator

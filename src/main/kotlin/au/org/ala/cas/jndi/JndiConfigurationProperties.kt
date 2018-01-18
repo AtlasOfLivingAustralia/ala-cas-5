@@ -34,5 +34,6 @@ open class HikariDatasource(
         var transactionIsolation: String? = null,
         var validationTimeout: Long? = null,
         var leakDetectionThreshold: Long? = null,
-        var dataSourceProperties: MutableMap<String, String> = mutableMapOf()
+        var dataSourceProperties: MutableMap<String, String> = mutableMapOf(),
+        var schema: String? = null
 )

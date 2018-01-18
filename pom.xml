@@ -6,7 +6,7 @@
     <parent>
         <groupId>au.org.ala</groupId>
         <artifactId>ala-parent-pom</artifactId>
-        <version>4</version>
+        <version>7</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -199,7 +199,7 @@
             <dependency>
                 <groupId>de.codecentric</groupId>
                 <artifactId>spring-boot-admin-starter-client</artifactId>
-                <version>1.5.3</version>
+                <version>1.5.6</version>
             </dependency>
             <!-- manage pac4j into compile scope -->
             <dependency>
@@ -218,6 +218,18 @@
                 <artifactId>caffeine</artifactId>
                 <scope>compile</scope>
             </dependency>
+            <!-- manage thymeleaf into compile scope -->
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf-spring4</artifactId>
+                <scope>compile</scope>
+            </dependency>
+            <!-- manage CAS into compile scope -->
+            <!--<dependency>-->
+                <!--<groupId>org.apereo.cas</groupId>-->
+                <!--<artifactId>cas-server-core-services-registry</artifactId>-->
+                <!--<scope>compile</scope>-->
+            <!--</dependency>-->
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -482,23 +494,10 @@
             <!--<artifactId>datasource-proxy</artifactId>-->
             <!--<version>1.4.1</version>-->
         <!--</dependency>-->
-        <dependency>
-            <groupId>com.github.h-thurow</groupId>
-            <artifactId>simple-jndi</artifactId>
-            <version>0.15.0</version>
-        </dependency>
-        <!-- need to move this out of runtime scope into compile scope -->
-        <dependency>
-            <groupId>org.thymeleaf</groupId>
-            <artifactId>thymeleaf-spring4</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <!-- Will be included in CAS 5.2 -->
         <!--<dependency>-->
-            <!--<groupId>com.github.ben-manes.caffeine</groupId>-->
-            <!--<artifactId>caffeine</artifactId>-->
-            <!--<version>2.5.4</version>-->
-            <!--<scope>compile</scope>-->
+            <!--<groupId>com.github.h-thurow</groupId>-->
+            <!--<artifactId>simple-jndi</artifactId>-->
+            <!--<version>0.15.0</version>-->
         <!--</dependency>-->
         <!-- Here be webjars -->
         <dependency>
@@ -518,7 +517,7 @@
             <artifactId>jquery-migrate</artifactId>
             <version>1.4.1</version>
         </dependency>
-        <!-- TODO update ALA skin to use this -->
+        <!-- TODO update ALA skin to use this version, currently the ALA skin requires v1.1 -->
         <!--<dependency>-->
             <!--<groupId>org.webjars</groupId>-->
             <!--<artifactId>jQuery-Autocomplete</artifactId>-->
@@ -563,11 +562,14 @@
         <!-- we use blank to create a blank war and spring boot repackage to build an executable jar -->
         <app.server></app.server>
 
-        <mainClassName>org.springframework.boot.loader.WarLauncher</mainClassName>
-        <isExecutable>false</isExecutable>
-        <manifestFileToUse>${project.build.directory}/war/work/org.apereo.cas/cas-server-webapp${app.server}/META-INF/MANIFEST.MF</manifestFileToUse>
+        <mainClassName>org.apereo.cas.web.CasWebApplication</mainClassName>
+        <isExecutable>true</isExecutable>
+        <manifestFileToUse></manifestFileToUse>
+        <!--<mainClassName>org.springframework.boot.loader.WarLauncher</mainClassName>-->
+        <!--<isExecutable>false</isExecutable>-->
+        <!--<manifestFileToUse>${project.build.directory}/war/work/org.apereo.cas/cas-server-webapp${app.server}/META-INF/MANIFEST.MF</manifestFileToUse>-->
 
-        <kotlin.version>1.2.10</kotlin.version>
+        <kotlin.version>1.2.20</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -617,38 +619,38 @@
     </repositories>
 
     <profiles>
-        <profile>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <id>exec</id>
-            <properties>
-                <mainClassName>org.apereo.cas.web.CasWebApplication</mainClassName>
-                <isExecutable>true</isExecutable>
-                <manifestFileToUse></manifestFileToUse>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.soebes.maven.plugins</groupId>
-                        <artifactId>echo-maven-plugin</artifactId>
-                        <version>0.3.0</version>
-                        <executions>
-                            <execution>
-                                <phase>prepare-package</phase>
-                                <goals>
-                                    <goal>echo</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <echos>
-                                <echo>Executable profile to make the generated CAS web application executable.</echo></echos>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!--<profile>-->
+            <!--<activation>-->
+                <!--<activeByDefault>true</activeByDefault>-->
+            <!--</activation>-->
+            <!--<id>exec</id>-->
+            <!--<properties>-->
+                <!--<mainClassName>org.apereo.cas.web.CasWebApplication</mainClassName>-->
+                <!--<isExecutable>true</isExecutable>-->
+                <!--<manifestFileToUse></manifestFileToUse>-->
+            <!--</properties>-->
+            <!--<build>-->
+                <!--<plugins>-->
+                    <!--<plugin>-->
+                        <!--<groupId>com.soebes.maven.plugins</groupId>-->
+                        <!--<artifactId>echo-maven-plugin</artifactId>-->
+                        <!--<version>0.3.0</version>-->
+                        <!--<executions>-->
+                            <!--<execution>-->
+                                <!--<phase>prepare-package</phase>-->
+                                <!--<goals>-->
+                                    <!--<goal>echo</goal>-->
+                                <!--</goals>-->
+                            <!--</execution>-->
+                        <!--</executions>-->
+                        <!--<configuration>-->
+                            <!--<echos>-->
+                                <!--<echo>Executable profile to make the generated CAS web application executable.</echo></echos>-->
+                        <!--</configuration>-->
+                    <!--</plugin>-->
+                <!--</plugins>-->
+            <!--</build>-->
+        <!--</profile>-->
         <!--<profile>-->
             <!--<activation>-->
                 <!--<activeByDefault>false</activeByDefault>-->

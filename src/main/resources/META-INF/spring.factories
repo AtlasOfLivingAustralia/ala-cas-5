@@ -1,2 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=au.org.ala.cas.jndi.ServletContextConfig,au.org.ala.cas.webflow.AlaCasWebflowConfiguration,au.org.ala.cas.delegated.AlaPac4jAuthenticationConfiguration,au.org.ala.cas.thymeleaf.AlaThymeleafConfiguration,au.org.ala.cas.thymeleaf.AlaStaticThymeleafPropertiesConfiguration
-org.springframework.boot.SpringApplicationRunListener=au.org.ala.cas.jndi.JndiRunListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=au.org.ala.cas.jndi.ServletContextConfig,au.org.ala.cas.webflow.AlaCasWebflowConfiguration,au.org.ala.cas.delegated.AlaPac4jAuthenticationConfiguration,au.org.ala.cas.thymeleaf.AlaThymeleafConfiguration,au.org.ala.cas.thymeleaf.AlaCasThemesConfiguration
+#org.springframework.boot.SpringApplicationRunListener=au.org.ala.cas.jndi.JndiRunListener
