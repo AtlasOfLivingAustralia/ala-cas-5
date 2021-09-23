@@ -21,6 +21,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.context.config.annotation.RefreshScope
 import org.springframework.context.ApplicationContext
+import org.springframework.context.MessageSource
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.DependsOn
@@ -65,6 +66,9 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
     @Autowired
     @Qualifier("userCreatorDataSource")
     lateinit var userCreatorDataSource: DataSource
+
+    @Autowired
+    lateinit var messageSource: MessageSource
 
     @Autowired
     @Qualifier("userCreatorTransactionManager")
@@ -131,6 +135,22 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
     @Bean
     @Qualifier(AlaCasWebflowConfigurer.STATE_ID_SAVE_EXTRA_ATTRS_ACTION)
     fun saveExtraAttrsAction() = SaveExtraAttrsAction(alaCasProperties, userCreatorDataSource, userCreatorTransactionManager, cachingAttributeRepository)
+
+    @Bean
+    @Qualifier(AlaCasWebflowConfigurer.DECISION_ID_SURVEY)
+    fun decisionSurveyAction() = DecisionSurveyAction(alaCasProperties, userCreatorDataSource)
+
+    @Bean
+    @Qualifier(AlaCasWebflowConfigurer.STATE_ID_SAVE_SURVEY_ACTION)
+    fun saveSurveyAction() = SaveSurveyAction(alaCasProperties, userCreatorDataSource, userCreatorTransactionManager)
+
+    @Bean
+    @Qualifier(AlaCasWebflowConfigurer.ACTION_ENTER_SURVEY)
+    fun enterSurveyAction() : Action = EnterSurveyAction(alaCasProperties)
+
+    @Bean
+    @Qualifier(AlaCasWebflowConfigurer.ACTION_RENDER_SURVEY)
+    fun renderSurveyAction(): Action = RenderSurveyAction(messageSource)
 
     @ConditionalOnMissingBean(name = ["alaAuthCookieWebflowConfigurer"])
     @Bean

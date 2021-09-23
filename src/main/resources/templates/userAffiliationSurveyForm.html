@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="layout">
+
+<head>
+    <title th:text="#{ala.screen.extra.header}">One quick request...</title>
+    <link href="../../static/css/cas.css" rel="stylesheet" th:href="@{${#themes.code('cas.standard.css.file')}}"/>
+</head>
+
+<body id="cas">
+<div layout:fragment="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h2 class="panel-title" th:utext="#{ala.screen.survey.header}">
+                        Sorry for bothering you...
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <p th:utext="#{ala.screen.survey.description}">
+                        Pardon the interruption.  We're eager to get you on your way to your destination but
+                        we're currently surveying active users, would you mind providing the following information?
+                        We'll only ask for this once.
+                    </p>
+                    <form class="form-horizontal" id="fm-survey" method="post" th:object="${survey}" th:action="@{/login}" data-toggle="validator">
+
+                        <div class="form-group">
+                            <label for="affiliation" class="col-sm-2 control-label" th:text="#{ala.screen.survey.affiliation}">What is your institutional affiliation?</label>
+                            <div class="col-sm-10 col-md-8">
+                                <select id="affiliation" name="affiliation"
+                                        class="form-control"
+                                        tabindex="2"
+                                        th:field="*{affiliation}">
+                                    <option th:each="affiliation : ${affiliations}"
+                                            th:value="${affiliation.key}"
+                                            th:text="${affiliation.value}">Affiliation</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="execution" th:value="${flowExecutionKey}"/>
+                        <input type="hidden" name="_eventId" value="submit"/>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <input class="btn btn-primary"
+                                       name="submit"
+                                       type="submit"
+                                       accesskey="s"
+                                       tabindex="5"
+                                       th:value="#{ala.screen.extra.submit}"
+                                       value="Submit">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" th:inline="javascript">
+
+        var i = [[#{ala.screen.extra.submit.wip}]];
+        $("#fm-survey").submit(function() {
+            $(":submit").attr("disabled", true);
+            $(":submit").attr("value", i);
+            return true;
+        });
+
+    </script>
+</div>
+</body>
+</html>

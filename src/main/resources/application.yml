@@ -50,7 +50,7 @@ flyway:
 jndi:
   hikari:
     jdbccas:
-      driverClass: com.mysql.jdbc.Driver
+      driverClass: com.mysql.cj.jdbc.Driver
 #      url: jdbc:mysql://localhost:3306/emmet?serverTimezone=Australia/Sydney&useSSL=false
 #      user: root
 #      password: password
@@ -74,7 +74,7 @@ cas:
       password: password
       socket-keep-alive: true
     jpa:
-      driverClass: com.mysql.jdbc.Driver
+      driverClass: com.mysql.cj.jdbc.Driver
       dialect: org.hibernate.dialect.MySQL57Dialect
       ddlAuto: validate
       healthQuery: /* ping */ SELECT
@@ -92,7 +92,7 @@ cas:
       defaultAttributesToRelease: id,userid,givenName,sn,firstname,lastname,email,affiliation,organisation,city,state,country,role,authority,legacyPassword,created,lastLogin
       jdbc:
         - dataSourceName: java:comp/env/jdbccas
-          driverClass: com.mysql.jdbc.Driver
+          driverClass: com.mysql.cj.jdbc.Driver
           requireAllAttributes: false
           # caseCanonicalization=NONE|LOWER|UPPER
           caseCanonicalization: NONE
@@ -135,7 +135,7 @@ cas:
           fieldPassword: password
           fieldDisabled: disabled
 #          fieldExpired: expired
-          driverClass: com.mysql.jdbc.Driver
+          driverClass: com.mysql.cj.jdbc.Driver
           principalAttributeList: legacy_password:legacyPassword
           # principalAttributeList:sn,cn:commonName,givenName
           passwordEncoder:
@@ -147,7 +147,7 @@ cas:
           fieldPassword: password
           fieldDisabled: disabled
 #          fieldExpired: expired
-          driverClass: com.mysql.jdbc.Driver
+          driverClass: com.mysql.cj.jdbc.Driver
           principalAttributeList: legacy_password:legacyPassword
           passwordEncoder:
             type: au.org.ala.cas.password.AlaPasswordEncoder
@@ -239,7 +239,7 @@ cas:
   monitor:
     jdbc:
       dataSourceName: java:comp/env/jdbccas
-      driverClass: com.mysql.jdbc.Driver
+      driverClass: com.mysql.cj.jdbc.Driver
       validationQuery: /* ping */ SELECT 1
     endpoints:
       enabled: true
@@ -327,7 +327,7 @@ cas:
         timeout: PT10S
         socket-keep-alive: true
 #      jpa:
-#        driverClass: com.mysql.jdbc.Driver
+#        driverClass: com.mysql.cj.jdbc.Driver
 #        ddl-auto: validate
 #        dialect: org.hibernate.dialect.MySQL57Dialect
 #        jpaLockingTgtEnabled: true
@@ -386,12 +386,13 @@ ala:
     userCreatePassword: "CHANGE_ME"
     countriesListUrl: ${ala.userDetailsBaseUrl}ws/registration/countries
     statesListUrl: ${ala.userDetailsBaseUrl}ws/registration/states
+    enableUserSurvey: false
     passwordEncoder: # This should be the same as the primary password encoder above
       type: BCRYPT
       characterEncoding: UTF-8
       strength: 10
     jdbc:
-      driverClass: com.mysql.jdbc.Driver
+      driverClass: com.mysql.cj.jdbc.Driver
       dataSourceName: java:comp/env/jdbccas
       enableUpdateLastLoginTime: true
       enableRequestExtraAttributes: true

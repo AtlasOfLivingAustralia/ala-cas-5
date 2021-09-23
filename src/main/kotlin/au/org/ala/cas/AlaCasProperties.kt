@@ -26,6 +26,7 @@ open class UserCreatorProperties(
 ) {
     lateinit var countriesListUrl: String
     lateinit var statesListUrl: String
+    var enableUserSurvey: Boolean = false
 }
 
 open class JDBCUserCreatorProperties : AbstractJpaProperties() {

@@ -40,11 +40,16 @@ class AlaCasWebflowConfigurer(
         val log = logger()
 
         const val STATE_ID_SAVE_EXTRA_ATTRS_ACTION = "saveExtraAttrsAction"
+        const val STATE_ID_SAVE_SURVEY_ACTION = "saveSurveyAction"
         const val DECISION_ID_EXTRA_ATTRS = "decisionExtraAttrsAction"
+        const val DECISION_ID_SURVEY = "decisionSurveyAction"
         const val VIEW_ID_DELEGATED_AUTH_EXTRA_ATTRS = "delegatedAuthFormView"
+        const val VIEW_ID_SURVEY = "userAffiliationSurveyFormView"
         const val VIEW_ID_ACCOUNT_NOT_ACTIVATED = "casAccountNotActivatedView"
         const val ACTION_ENTER_DELEGATED_AUTH_EXTRA_ATTRS = "enterDelegatedAuthAction"
+        const val ACTION_ENTER_SURVEY = "enterSurveyAction"
         const val ACTION_RENDER_DELEGATED_AUTH_EXTRA_ATTRS = "renderDelegatedAuthAction"
+        const val ACTION_RENDER_SURVEY = "renderSurveyAction"
         const val ACTION_UPDATE_PASSWORD = "updatePasswordAction"
     }
 
@@ -65,6 +70,10 @@ class AlaCasWebflowConfigurer(
 
             if (alaCasProperties.userCreator.jdbc.enableRequestExtraAttributes) {
                 addDelegatedAuthPropertyRequest(inFlow)
+            }
+
+            if (alaCasProperties.userCreator.enableUserSurvey) {
+                addUserSurveyRequest(inFlow)
             }
 
             if (alaCasProperties.userCreator.jdbc.enableUpdateLegacyPasswords) {
@@ -118,6 +127,29 @@ class AlaCasWebflowConfigurer(
         val saveAction = createActionState(flow, STATE_ID_SAVE_EXTRA_ATTRS_ACTION, STATE_ID_SAVE_EXTRA_ATTRS_ACTION)
         saveAction.transitionSet.add(successTransition)
     }
+
+    private fun addUserSurveyRequest(flow: Flow) {
+        // Patch the login flow to ask the user about the survey if they haven't had the survey yet.
+        val tgtAction = flow.getState(CasWebflowConstants.STATE_ID_CREATE_TICKET_GRANTING_TICKET) as ActionState
+        val successTransition = tgtAction.getTransition(CasWebflowConstants.TRANSITION_ID_SUCCESS) as Transition
+        createTransitionForState(tgtAction, CasWebflowConstants.TRANSITION_ID_SUCCESS, DECISION_ID_SURVEY, true)
+
+        val surveyDecision = createActionState(flow, DECISION_ID_SURVEY, DECISION_ID_SURVEY)
+        createTransitionForState(surveyDecision, CasWebflowConstants.TRANSITION_ID_NO, successTransition.targetStateId)
+        createTransitionForState(surveyDecision, CasWebflowConstants.TRANSITION_ID_YES, VIEW_ID_SURVEY)
+
+        val viewState = createViewState(flow, VIEW_ID_SURVEY, "userAffiliationSurveyForm")
+        viewState.entryActionList.add(createEvaluateAction(ACTION_ENTER_SURVEY))
+        viewState.renderActionList.add(createEvaluateAction(ACTION_RENDER_SURVEY))
+
+        createStateModelBinding(viewState, "flowScope.${SaveSurveyAction.SURVEY_FLOW_VAR}", Survey::class.java)
+
+        createTransitionForState(viewState, CasWebflowConstants.TRANSITION_ID_SUBMIT, STATE_ID_SAVE_SURVEY_ACTION)
+
+        val saveAction = createActionState(flow, STATE_ID_SAVE_SURVEY_ACTION, STATE_ID_SAVE_SURVEY_ACTION)
+        saveAction.transitionSet.add(successTransition)
+    }
+
 
     private fun doGenerateAuthCookieOnLoginAction(flow: Flow) {
         val generateServiceTicketAction =
