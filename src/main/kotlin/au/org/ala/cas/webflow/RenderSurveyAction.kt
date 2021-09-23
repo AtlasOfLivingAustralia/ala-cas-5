@@ -27,6 +27,7 @@ class RenderSurveyAction(private val messageSource: MessageSource) : AbstractAct
                 "govFederal" to messageSource.getMessage("ala.affiliations.govFederal", args, "Government - federal", locale),
                 "volunteer" to messageSource.getMessage("ala.affiliations.volunteer", args, "Volunteer including citizen scientists", locale),
                 "education" to messageSource.getMessage("ala.affiliations.education", args, "Education – primary and secondary", locale),
+                "nfp" to messageSource.getMessage("ala.affiliations.nfp", args, "Not for profit", locale),
                 "other" to messageSource.getMessage("ala.affiliations.other", args, "Other / unaffiliated", locale),
                 "disinclinedToAcquiesce" to messageSource.getMessage("ala.affiliations.disinclinedToAcquiesce", args, "Prefer not to say", locale)
             )
