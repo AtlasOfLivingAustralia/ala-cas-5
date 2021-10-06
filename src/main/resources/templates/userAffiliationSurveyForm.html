@@ -13,29 +13,26 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h2 class="panel-title" th:utext="#{ala.screen.survey.header}">
-                        Sorry for bothering you...
+                        Sorry to bother you...
                     </h2>
                 </div>
                 <div class="panel-body">
                     <p th:utext="#{ala.screen.survey.description}">
-                        Pardon the interruption.  We're eager to get you on your way to your destination but
-                        we're currently surveying active users, would you mind providing the following information?
-                        We'll only ask for this once.
+                        We’ll send you to your destination in a moment. But first, we’re surveying active users and we’d appreciate it if you could provide the following information. We’ll only ask you this once.
                     </p>
-                    <form class="form-horizontal" id="fm-survey" method="post" th:object="${survey}" th:action="@{/login}" data-toggle="validator">
+                    <form class="form" id="fm-survey" method="post" th:object="${survey}" th:action="@{/login}" data-toggle="validator">
 
-                        <div class="form-group">
-                            <label for="affiliation" class="col-sm-2 control-label" th:text="#{ala.screen.survey.affiliation}">What is your institutional affiliation?</label>
-                            <div class="col-sm-10 col-md-8">
-                                <select id="affiliation" name="affiliation"
-                                        class="form-control"
-                                        tabindex="2"
-                                        th:field="*{affiliation}">
-                                    <option th:each="affiliation : ${affiliations}"
-                                            th:value="${affiliation.key}"
-                                            th:text="${affiliation.value}">Affiliation</option>
-                                </select>
-                            </div>
+                        <div class="form-group" th:classappend="${#arrays.length(flowRequestContext.messageContext.getMessagesBySource('affiliation'))>0}? has-error">
+                            <label for="affiliation" class="control-label" th:text="#{ala.screen.survey.affiliation}">When you are using the ALA what is your primary affiliation?</label>
+                            <select id="affiliation" name="affiliation"
+                                    class="form-control"
+                                    tabindex="2"
+                                    th:field="*{affiliation}">
+                                <option th:each="affiliation : ${affiliations}"
+                                        th:value="${affiliation.key}"
+                                        th:text="${affiliation.value}">Affiliation</option>
+                            </select>
+                            <span id="helpBlockAffiliation" class="help-block" th:if="${!#arrays.isEmpty(flowRequestContext.messageContext.getMessagesBySource('affiliation'))}" th:utext="#{ala.screen.survey.affiliation.required}">Affiliation is required</span>
                         </div>
 
                         <input type="hidden" name="execution" th:value="${flowExecutionKey}"/>
