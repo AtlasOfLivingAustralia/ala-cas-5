@@ -7,6 +7,11 @@ import org.springframework.webflow.action.AbstractAction
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.RequestContext
 
+/**
+ * Webflow action to decide whether to show the user a city / state / country / organisation form.
+ * Logic is, if the user has never logged in before and does not have city / state / country or organisation set then
+ * show them the form.
+ */
 class DecisionExtraAttrsAction : AbstractAction() {
 
     companion object {

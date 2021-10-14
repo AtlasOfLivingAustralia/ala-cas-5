@@ -12,7 +12,7 @@ import org.springframework.webflow.execution.RequestContext
 import javax.sql.DataSource
 
 /**
- * Decide whether to offer the user a survey or not
+ * Webflow Action to decide whether to offer the user a survey or not
  */
 class DecisionSurveyAction(
     val alaCasProperties: AlaCasProperties,

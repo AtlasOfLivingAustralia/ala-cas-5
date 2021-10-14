@@ -1,52 +1,34 @@
 package au.org.ala.cas.webflow
 
 import au.org.ala.cas.*
-import au.org.ala.cas.delegated.AlaPrincipalFactory
 import au.org.ala.utils.logger
-import org.apereo.cas.authentication.Authentication
-import org.apereo.cas.authentication.principal.ClientCredential
 import org.apereo.cas.web.support.WebUtils
-import org.apereo.services.persondir.support.CachingPersonAttributeDaoImpl
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.jdbc.datasource.DataSourceTransactionManager
-import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.support.TransactionTemplate
 import org.springframework.webflow.action.AbstractAction
-import org.springframework.webflow.engine.FlowVariable
-import org.springframework.webflow.engine.VariableValueFactory
 import org.springframework.webflow.execution.Event
 import org.springframework.webflow.execution.RequestContext
 import javax.sql.DataSource
 
+/**
+ * Webflow Action used to save the extra attributes form.
+ * Includes logic to save the survey if it's offered in combination
+ */
 open class SaveExtraAttrsAction(
     val alaCasProperties: AlaCasProperties,
     val dataSource: DataSource,
-    transactionManager: DataSourceTransactionManager,
-    val cachingAttributeRepository: CachingPersonAttributeDaoImpl) : AbstractAction() {
+    private val extraAttributesService: ExtraAttributesService) : AbstractAction() {
 
 
     companion object {
         val log = logger()
 
         const val EXTRA_ATTRS_FLOW_VAR = "attrs"
-
-        const val ORGANISATION = "organisation"
-        const val CITY = "city"
-        const val STATE = "state"
-        const val COUNTRY = "country"
-//        const val TELEPHONE = "telephone"
-//        const val PRIMARY_USER_TYPE = "primaryUserType"
-//        const val SECONDARY_USER_TYPE = "secondaryUserType"
     }
-
-    val transactionTemplate: TransactionTemplate = TransactionTemplate(transactionManager)
 
     override fun doExecute(context: RequestContext): Event {
 
 //        val credential = WebUtils.getCredential(context, ClientCredential::class.java)
         val authentication = WebUtils.getAuthentication(context)
         val userid: Long? = authentication.alaUserId()
-        val email = authentication.stringAttribute("email")
 
         if (userid == null) {
             log.warn("Couldn't extract userid from {}, aborting", authentication)
@@ -61,51 +43,23 @@ open class SaveExtraAttrsAction(
             return success()
         }
 
-        transactionTemplate.execute { status ->
-            try {
-                val template = NamedParameterJdbcTemplate(dataSource)
-                listOf(ORGANISATION to extraAttrs.organisation,
-                    CITY to extraAttrs.city,
-                    STATE to extraAttrs.state,
-                    COUNTRY to extraAttrs.country
-                ).forEach { (name, value) ->
-                    updateField(template, userid, authentication, name, value)
-                }
-                // invalidate cache for the new user attributes
-                // TODO there must be a less coupled way of achieving this
+        extraAttributesService.updateExtraAttrs(userid, authentication, extraAttrs)
 
-                email?.let { cachingAttributeRepository.removeUserAttributes(it) }
-            } catch (e: Exception) {
-                // If we can't set the properties, just log and move on
-                // because none of these properties are required.
-                log.warn("Rolling back transaction because of exception", e)
-                status.setRollbackOnly()
-//                throw e
+        if (alaCasProperties.userCreator.enableUserSurvey) {
+            val survey = extraAttrs.survey
+            if (survey != null) {
+                extraAttributesService.updateUserSurveyResult(userid, survey)
+            } else {
+                log.warn("Enable Users Survey is enabled but the extraAttrs.survey is null")
             }
         }
 
-        context.flowScope.remove(EXTRA_ATTRS_FLOW_VAR)
-        return success()
+        return success(context)
     }
 
-    private fun updateField(template: NamedParameterJdbcTemplate, userid: Long, authentication: Authentication, name: String, value: String) {
-        if (value != authentication.stringAttribute(name)) {
-            updateField(template, userid, name, value)
-            authentication.principal.attributes.setSingleAttributeValue(name, value)
-            if (authentication.attributes.containsKey(name)) authentication.attributes.setSingleAttributeValue(name, value)
-        }
-    }
-
-    private fun updateField(template: NamedParameterJdbcTemplate, userid: Long, name: String, value: String) {
-        val params = mapOf("userid" to userid, "name" to name, "value" to value)
-        val result = template.queryForObject(alaCasProperties.userCreator.jdbc.countExtraAttributeSql, params, Integer::class.java)
-        val updateCount = if (result > 0) {
-            template.update(alaCasProperties.userCreator.jdbc.updateExtraAttributeSql, params)
-        } else {
-            template.update(alaCasProperties.userCreator.jdbc.insertExtraAttributeSql, params)
-        }
-        if (updateCount != 1) {
-            log.warn("Insert / update field for {}, {}, {} returned {} updates", userid, name, value, updateCount)
+    fun success(context: RequestContext): Event {
+        return super.success().also {
+            context.flowScope.remove(EXTRA_ATTRS_FLOW_VAR)
         }
     }
 

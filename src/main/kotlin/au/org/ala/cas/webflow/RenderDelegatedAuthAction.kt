@@ -11,7 +11,15 @@ import org.springframework.webflow.execution.RequestContext
 import java.net.URL
 import java.util.concurrent.TimeUnit
 
-class RenderDelegatedAuthAction(val alaCasProperties: AlaCasProperties) : AbstractAction() {
+/**
+ * WebFlow Action called prior to the delegated auth extra attributes interrupt form being rendered.
+ *
+ * This action puts various select box entries into the view scope.
+ */
+class RenderDelegatedAuthAction(
+    private val alaCasProperties: AlaCasProperties,
+    private val extraAttributesService: ExtraAttributesService
+) : AbstractAction() {
     val typeReference = TypeFactory.defaultInstance()
         .constructCollectionType(List::class.java, CodedName::class.java)
     val mapper = jacksonObjectMapper()
@@ -29,6 +37,11 @@ class RenderDelegatedAuthAction(val alaCasProperties: AlaCasProperties) : Abstra
     override fun doExecute(context: RequestContext): Event {
         context.viewScope.put("countries", stateCache[COUNTRIES])
         context.viewScope.put("states", stateCache[(context.flowScope[SaveExtraAttrsAction.EXTRA_ATTRS_FLOW_VAR] as ExtraAttrs).country])
+        if (alaCasProperties.userCreator.enableUserSurvey) {
+            context.viewScope.put("affiliations",
+                extraAttributesService.surveyOptions(context.externalContext.locale)
+            )
+        }
         return success()
     }
 

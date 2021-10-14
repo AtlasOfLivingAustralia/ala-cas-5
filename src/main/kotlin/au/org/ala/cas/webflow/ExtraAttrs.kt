@@ -1,20 +1,24 @@
 package au.org.ala.cas.webflow
 
 import au.org.ala.cas.singleStringAttributeValue
-import au.org.ala.cas.webflow.SaveExtraAttrsAction.Companion.CITY
-import au.org.ala.cas.webflow.SaveExtraAttrsAction.Companion.COUNTRY
-import au.org.ala.cas.webflow.SaveExtraAttrsAction.Companion.ORGANISATION
-import au.org.ala.cas.webflow.SaveExtraAttrsAction.Companion.STATE
+import au.org.ala.cas.webflow.ExtraAttributesService.Companion.CITY
+import au.org.ala.cas.webflow.ExtraAttributesService.Companion.COUNTRY
+import au.org.ala.cas.webflow.ExtraAttributesService.Companion.ORGANISATION
+import au.org.ala.cas.webflow.ExtraAttributesService.Companion.STATE
 import au.org.ala.utils.logger
 import org.springframework.binding.message.MessageBuilder
 import org.springframework.binding.validation.ValidationContext
 import java.io.Serializable
 
+/**
+ * Form bean for the asking new delegated auth users for extra attributes
+ */
 data class ExtraAttrs @JvmOverloads constructor(
     var organisation: String = "",
     var city: String = "",
     var state: String = "",
-    var country: String = ""
+    var country: String = "",
+    var survey: Survey? = null
 ) : Serializable {
 
     companion object {
@@ -50,5 +54,7 @@ data class ExtraAttrs @JvmOverloads constructor(
                 }
             }
         }
+
+        survey?.validate(context)
     }
 }
