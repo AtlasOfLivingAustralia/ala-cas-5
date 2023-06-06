@@ -31,7 +31,14 @@ open class GenerateAuthCookieAction(
         //
         // Create ALA specific cookie that any ALA web application can read
         //
-        val ticketGrantingTicket = WebUtils.getTicketGrantingTicket(context)
+        val ticketGrantingTicketId = WebUtils.getTicketGrantingTicketId(context) ?: WebUtils.getTicketGrantingTicketIdFrom(context.flowScope)
+
+        if (ticketGrantingTicketId == null) {
+            log.debug("Ticket-granting ticket ID is blank")
+            return success()
+        }
+
+        val ticketGrantingTicket = ticketRegistrySupport.getTicketGrantingTicket(ticketGrantingTicketId)
 
         if (ticketGrantingTicket != null) {
             log.debug("Ticket-granting ticket found in the context is [{}]", ticketGrantingTicket.id)
