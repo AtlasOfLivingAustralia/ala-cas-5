@@ -286,7 +286,7 @@ cas:
         timeToKillInSeconds: 7884000 # P3M
       rememberMe:
         enabled: true
-        timeToKillInSeconds: -1 # Never expires
+        timeToKillInSeconds: 315360000 # P10Y note: unlike other expiries under tgt this must be a positive integer and doesn't support -1 for infinite duration
     registry:
 #      cleaner:
 #        schedule:
