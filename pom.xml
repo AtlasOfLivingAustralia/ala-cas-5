@@ -14,7 +14,7 @@
     <artifactId>cas</artifactId>
     <packaging>war</packaging>
     <!-- Version should ${cas.version}-${ala.build.version}(-SNAPSHOT)? -->
-    <version>6.6.7-1-SNAPSHOT</version>
+    <version>6.6.15-1-SNAPSHOT</version>
 
     <name>ALA CAS</name>
     <description>ALA Central Authentication Service</description>
@@ -922,7 +922,7 @@
     </dependencies>
 
     <properties>
-        <cas.version>6.6.7</cas.version>
+        <cas.version>6.6.15</cas.version>
         <springboot.version>2.7.3</springboot.version>
         <!-- app.server could be -jetty, -undertow, -tomcat, or blank if you plan to provide appserver -->
         <!-- we use blank to create a blank war and spring boot repackage to build an executable Tomcat jar -->
