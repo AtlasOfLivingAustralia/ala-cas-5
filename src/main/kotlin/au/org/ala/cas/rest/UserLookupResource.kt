@@ -3,6 +3,7 @@ package au.org.ala.cas.rest
 import au.org.ala.utils.logger
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.text.StringEscapeUtils
+import org.apereo.cas.authentication.principal.NullPrincipal
 import org.apereo.cas.authentication.principal.Principal
 import org.apereo.cas.authentication.principal.PrincipalResolver
 import org.apereo.cas.support.oauth.web.endpoints.OAuth20ConfigurationContext
@@ -74,7 +75,7 @@ class UserLookupResource(
 //                    this.getConfigurationContext().getUserProfileViewRenderer().render(map, accessTokenTicket, response)
                     val user = request.getParameter("userLookup")
                     val principal = principalResolver.resolve { user }
-                    if (principal == null) {
+                    if (principal == null || principal is NullPrincipal) {
                         LOGGER.info("user ({}) not found", user)
                         ResponseEntity("not_found", HttpStatus.NOT_FOUND)
                     } else {

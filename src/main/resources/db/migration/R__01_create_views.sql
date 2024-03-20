@@ -19,6 +19,7 @@ CREATE OR REPLACE VIEW user_details AS
     p.telephone,
     p.flickr_id,
     p.flickr_username,
+    p.affiliation,
     ur.authority
   FROM users u
     JOIN (
@@ -31,7 +32,8 @@ CREATE OR REPLACE VIEW user_details AS
              group_concat(if(property = 'secondaryUserType', value, null)) as secondary_user_type,
              group_concat(if(property = 'telephone', value, null)) as telephone,
              group_concat(if(property = 'flickrId', value, null)) as flickr_id,
-             group_concat(if(property = 'flickrUsername', value, null)) as flickr_username
+             group_concat(if(property = 'flickrUsername', value, null)) as flickr_username,
+             group_concat(if(property = 'affiliation', value, null)) as affiliation
            FROM profiles
            GROUP BY userid
          ) p on u.userid = p.userid

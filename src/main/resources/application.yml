@@ -141,7 +141,7 @@ cas:
             characterEncoding: UTF-8
             strength: 10
         - dataSourceName: java:comp/env/jdbccas
-          sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, TRUE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' WHERE u.username = ?;
+          sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, TRUE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' AND p.type != 'bcrypt' WHERE u.username = ?;
           fieldPassword: password
           fieldDisabled: disabled
 #          fieldExpired: expired
@@ -173,7 +173,7 @@ cas:
     oidc:
       core:
         userDefinedScopes:
-          ala: userid, organisation, city, state, country
+          ala: userid, organisation, city, state, country, affiliation
           roles: role, authority
           'users/read':
           'users/write':
@@ -247,6 +247,7 @@ cas:
           - state
           - country
           - userid
+          - affiliation
         # Default algorithms minus none
         id-token-signing-alg-values-supported: ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512"]
         user-info-signing-alg-values-supported: ["RS256", "RS384", "RS512", "PS256", "PS384", "PS512", "ES256", "ES384", "ES512", "HS256", "HS384", "HS512"]
