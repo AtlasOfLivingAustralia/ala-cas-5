@@ -16,7 +16,7 @@ before_install:
 - date
 - mkdir -p ~/.m2
 - wget -q -O ~/.m2/settings.xml https://raw.githubusercontent.com/AtlasOfLivingAustralia/travis-build-configuration/master/travis_maven_settings.xml
-after_success: '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./mvnw deploy -DskipTests=true'
+after_success: '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./mvnw --no-transfer-progress deploy -DskipTests=true'
 env:
   global:
   - JAVA_TOOL_OPTIONS=-Dhttps.protocols=TLSv1.2
