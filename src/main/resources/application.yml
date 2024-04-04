@@ -182,6 +182,7 @@ cas:
           'biocache/read':
           'biocache/write':
           'ala/internal':
+          'digivol/internal': 
         claimsMap:
           sub: userid #	string	Subject - Identifier for the End-User at the Issuer.
           name: displayName #	string	End-User's full name in displayable form including all name parts, possibly including titles and suffixes, ordered according to the End-User's locale and preferences.
@@ -219,6 +220,7 @@ cas:
           - 'biocache/read'
           - 'biocache/write'
           - 'ala/internal'
+          - 'digivol/internal'
         claims: # This list is all the specified oidc claims plus ALA specific
           - sub
           - name
