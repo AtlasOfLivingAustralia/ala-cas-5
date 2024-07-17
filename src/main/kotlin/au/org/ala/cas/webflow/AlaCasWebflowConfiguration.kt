@@ -1,21 +1,19 @@
 package au.org.ala.cas.webflow
 
 import au.org.ala.cas.AlaCasProperties
+import au.org.ala.cas.delegated.AlaDelegatedClientAuthenticationAction
 import au.org.ala.utils.logger
-import org.apereo.cas.authentication.principal.ServiceFactory
-import org.apereo.cas.authentication.principal.WebApplicationService
 import org.apereo.cas.authentication.support.password.PasswordEncoderUtils
 import org.apereo.cas.configuration.CasConfigurationProperties
 import org.apereo.cas.configuration.support.Beans
-import org.apereo.cas.services.ServicesManager
+import org.apereo.cas.pac4j.client.DelegatedClientAuthenticationFailureEvaluator
 import org.apereo.cas.ticket.registry.TicketRegistrySupport
 import org.apereo.cas.web.cookie.CasCookieBuilder
 import org.apereo.cas.web.cookie.CookieGenerationContext
-import org.apereo.cas.web.flow.CasWebflowExecutionPlan
-import org.apereo.cas.web.flow.CasWebflowExecutionPlanConfigurer
+import org.apereo.cas.web.flow.*
+import org.apereo.cas.web.flow.actions.WebflowActionBeanSupplier
 import org.apereo.cas.web.support.gen.CookieRetrievingCookieGenerator
 import org.apereo.services.persondir.IPersonAttributeDao
-import org.apereo.services.persondir.support.CachingPersonAttributeDaoImpl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -85,6 +83,18 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
     @Autowired
     @Qualifier("cachingAttributeRepository")
     lateinit var cachingAttributeRepository: IPersonAttributeDao //CachingPersonAttributeDaoImpl
+
+    @Autowired
+//    @Qualifier("delegatedClientAuthenticationConfigurationContext")
+    lateinit var delegatedClientAuthenticationConfigurationContext: DelegatedClientAuthenticationConfigurationContext
+
+    @Autowired
+//    @Qualifier("delegatedClientAuthenticationWebflowManager")
+    lateinit var defaultDelegatedClientAuthenticationWebflowManager: DelegatedClientAuthenticationWebflowManager
+
+    @Autowired
+//    @Qualifier("delegatedClientAuthenticationFailureEvaluator")
+    lateinit var delegatedClientAuthenticationFailureEvaluator: DelegatedClientAuthenticationFailureEvaluator
 
 //    @Autowired
 //    @Qualifier("ticketGrantingTicketCookieGenerator")
@@ -171,6 +181,18 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
     @Bean
     @Qualifier(AlaCasWebflowConfigurer.ACTION_RENDER_SURVEY)
     fun renderSurveyAction(): Action = RenderSurveyAction(extraAttributesService())
+
+    @Bean
+    @Qualifier(CasWebflowConstants.ACTION_ID_DELEGATED_AUTHENTICATION) // "DelegatedClientAuthenticationAction"
+    fun delegatedAuthenticationAction(): Action {
+        return WebflowActionBeanSupplier.builder()
+            .withApplicationContext(applicationContext)
+            .withProperties(casConfigurationProperties)
+            .withAction { AlaDelegatedClientAuthenticationAction(delegatedClientAuthenticationConfigurationContext, defaultDelegatedClientAuthenticationWebflowManager, delegatedClientAuthenticationFailureEvaluator) }
+            .withId(CasWebflowConstants.ACTION_ID_DELEGATED_AUTHENTICATION)
+            .build()
+            .get()
+    }
 
     @ConditionalOnMissingBean(name = ["alaAuthCookieWebflowConfigurer"])
     @Bean

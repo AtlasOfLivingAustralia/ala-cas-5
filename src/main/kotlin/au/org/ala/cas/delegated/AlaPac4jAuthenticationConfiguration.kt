@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.scribejava.core.model.OAuth1RequestToken
 import org.apereo.cas.authentication.Authentication
-import org.apereo.cas.authentication.principal.PrincipalFactory
 import org.apereo.cas.authentication.principal.PrincipalResolver
 import org.apereo.cas.authentication.principal.WebApplicationService
 import org.apereo.cas.authentication.support.password.PasswordEncoderUtils
@@ -21,12 +20,12 @@ import org.apereo.cas.ticket.serialization.TicketSerializationExecutionPlan
 import org.apereo.cas.ticket.serialization.serializers.TransientSessionTicketStringSerializer
 import org.apereo.cas.util.serialization.AbstractJacksonBackedStringSerializer
 import org.apereo.cas.validation.ImmutableAssertion
+import org.apereo.cas.web.flow.DelegatedClientAuthenticationConfigurationContext
 import org.apereo.services.persondir.IPersonAttributeDao
 import org.pac4j.core.client.Clients
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.cloud.context.config.annotation.RefreshScope
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -53,6 +52,9 @@ class AlaPac4jAuthenticationConfiguration {
     @Autowired
     lateinit var ticketSerializationExecutionPlan: TicketSerializationExecutionPlan
 
+    @Autowired
+    lateinit var delegatedClientAuthenticationConfigurationContext: DelegatedClientAuthenticationConfigurationContext
+
     @Bean
     @Qualifier("userCreatorDataSource")
     fun userCreatorDataSource() = JpaBeans.newDataSource(alaCasProperties.userCreator.jdbc)
@@ -68,14 +70,19 @@ class AlaPac4jAuthenticationConfiguration {
         passwordEncoder = PasswordEncoderUtils.newPasswordEncoder(alaCasProperties.userCreator.passwordEncoder, applicationContext)
     )
 
-    @Bean(name = ["clientPrincipalFactory"])
-    @RefreshScope
-    fun clientPrincipalFactory(
+    @Bean
+    fun alaDelegatedClientAuthenticationCredentialResolver(
         @Autowired @Qualifier("personDirectoryAttributeRepositoryPrincipalResolver") personDirectoryPrincipalResolver: PrincipalResolver,
         @Autowired @Qualifier("cachingAttributeRepository") cachingAttributeRepository: IPersonAttributeDao, //CachingPersonAttributeDaoImpl,
         @Autowired userCreator: UserCreator,
-        @Autowired extraAttributesService: ExtraAttributesService,
-    ): PrincipalFactory = AlaPrincipalFactory(personDirectoryPrincipalResolver, cachingAttributeRepository, userCreator, extraAttributesService)
+        @Autowired extraAttributesService: ExtraAttributesService
+    ) =
+        AlaDelegatedClientAuthenticationCredentialResolver(
+            delegatedClientAuthenticationConfigurationContext,
+            personDirectoryPrincipalResolver,
+            cachingAttributeRepository,
+            userCreator,
+            extraAttributesService)
 
     // TODO How to replicate this?
     @PostConstruct

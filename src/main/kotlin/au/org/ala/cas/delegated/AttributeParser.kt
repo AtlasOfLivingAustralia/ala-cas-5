@@ -26,6 +26,19 @@ interface AttributeParser {
         /** Log instance.  */
         private val log = logger()
 
+        fun create(profile: UserProfile): AttributeParser {
+            return when (profile.javaClass) {
+                GitHubProfile::class.java -> GithubAttributeParser(profile.attributes)
+                FacebookProfile::class.java,
+                LinkedIn2Profile::class.java,
+                WindowsLiveProfile::class.java,
+                OidcProfile::class.java -> OAuth20AttributeParser(profile.attributes)
+                TwitterProfile::class.java -> TwitterAttributeParser(profile.attributes)
+                Google2Profile::class.java -> Google2AttributeParser(profile.attributes)
+                else -> throw IllegalArgumentException("Unsupported profile type: ${profile.javaClass.name}").also { log.error("Aborting due to unsupported profile type: ${profile.javaClass.name}") }
+            }
+        }
+
         fun create(typedId: String, userAttributes: Map<String, Any>): AttributeParser {
             val profileType = typedId.substringBefore(Pac4jConstants.TYPED_ID_SEPARATOR)
 
