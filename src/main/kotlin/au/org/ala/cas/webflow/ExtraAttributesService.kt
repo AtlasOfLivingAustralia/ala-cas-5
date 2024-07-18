@@ -103,7 +103,7 @@ class ExtraAttributesService(
      * @param typedId The pac4j typed id from the delegated login
      * @param attributes The pac4j delegated login profile attributes
      */
-    fun addDelegatedId(principal: Principal, typedId: String, attributes: Map<String, List<Any>>) {
+    fun addDelegatedId(principal: Principal, typedId: String, attributes: Map<String, Any>) {
         val dbId = singleLongAttributeValue(principal.attributes["userid"])
 
         if (dbId != null) {

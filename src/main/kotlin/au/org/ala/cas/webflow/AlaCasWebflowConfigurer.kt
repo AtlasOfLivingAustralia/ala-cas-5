@@ -3,17 +3,19 @@ package au.org.ala.cas.webflow
 import au.org.ala.cas.AlaCasProperties
 import au.org.ala.cas.delegated.AccountNotActivatedException
 import au.org.ala.utils.logger
+import org.apereo.cas.authentication.AuthenticationException
 import org.apereo.cas.configuration.CasConfigurationProperties
 import org.apereo.cas.web.flow.CasWebflowConstants
 import org.apereo.cas.web.flow.configurer.AbstractCasWebflowConfigurer
-import org.springframework.context.ApplicationContext
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.core.Ordered
 import org.springframework.webflow.definition.registry.FlowDefinitionRegistry
 import org.springframework.webflow.engine.ActionState
+import org.springframework.webflow.engine.DecisionState
 import org.springframework.webflow.engine.Flow
 import org.springframework.webflow.engine.Transition
 import org.springframework.webflow.engine.builder.support.FlowBuilderServices
+import javax.security.auth.login.AccountException
 
 
 class AlaCasWebflowConfigurer(
@@ -80,6 +82,8 @@ class AlaCasWebflowConfigurer(
             if (alaCasProperties.userCreator.jdbc.enableUpdateLegacyPasswords) {
                 addPasswordUpgrade(inFlow)
             }
+
+            addHandleDelegatedAuthnFailure(inFlow)
         }
 
         if (outFlow != null) {
@@ -177,6 +181,23 @@ class AlaCasWebflowConfigurer(
     private fun addAccountNotActivatedHandler(flow: Flow) {
         val handler = flow.getState(CasWebflowConstants.STATE_ID_HANDLE_AUTHN_FAILURE) as ActionState
         createTransitionForState(handler, AccountNotActivatedException::class.java.simpleName, VIEW_ID_ACCOUNT_NOT_ACTIVATED)
+    }
+
+    private fun addHandleDelegatedAuthnFailure(flow: Flow) {
+
+        // patch the transition state to include a branch to check for AuthenticationExceptions and redirect the flow to the
+        // CAS STATE_IDE_HANDLE_AUTHN_FAILURE state
+        val decisionState = getTransitionableState<DecisionState>(flow, CasWebflowConstants.DECISION_STATE_CHECK_DELEGATED_AUTHN_FAILURE, DecisionState::class.java)
+
+        val elseIfExpression = createExpression("flashScope.${CasWebflowConstants.ATTRIBUTE_ERROR_ROOT_CAUSE_EXCEPTION} instanceof T(${AuthenticationException::class.java.name})", Boolean::class.java)
+        val elseIfTransition = createTransition(elseIfExpression, CasWebflowConstants.STATE_ID_HANDLE_AUTHN_FAILURE)
+
+        val elseTransition = decisionState.transitionSet.toArray().last()
+
+        decisionState.transitionSet.remove(elseTransition)
+        decisionState.transitionSet.add(elseIfTransition)
+        decisionState.transitionSet.add(elseTransition)
+
     }
 
 }

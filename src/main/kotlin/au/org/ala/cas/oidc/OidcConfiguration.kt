@@ -1,10 +1,11 @@
 package au.org.ala.cas.oidc
 
-import org.apereo.cas.CentralAuthenticationService
+import au.org.ala.cas.AlaCasProperties
 import org.apereo.cas.authentication.principal.PrincipalFactory
 import org.apereo.cas.authentication.principal.ServiceFactory
 import org.apereo.cas.authentication.principal.WebApplicationService
 import org.apereo.cas.configuration.CasConfigurationProperties
+import org.apereo.cas.oidc.web.controllers.logout.OidcPostLogoutRedirectUrlMatcher
 import org.apereo.cas.support.oauth.authenticator.OAuth20CasAuthenticationBuilder
 import org.apereo.cas.support.oauth.profile.OAuth20ProfileScopeToAttributesFilter
 import org.apereo.cas.support.oauth.web.OAuth20RequestParameterResolver
@@ -23,10 +24,19 @@ import org.springframework.context.annotation.ScopedProxyMode
 
 
 @Configuration
-@EnableConfigurationProperties(CasConfigurationProperties::class)
+@EnableConfigurationProperties(CasConfigurationProperties::class, AlaCasProperties::class)
 class OidcConfiguration {
 
-//    @ConditionalOnMissingBean(name = ["oauthTokenGenerator"])
+    // override default CAS postLogoutRedirectUrlMatcher bean to allow for custom OIDC logout redirect URL patterns
+    @RefreshScope(proxyMode = ScopedProxyMode.DEFAULT)
+    @Bean
+    fun postLogoutRedirectUrlMatcher(alaCasProperties: AlaCasProperties): OidcPostLogoutRedirectUrlMatcher {
+        return OidcPostLogoutRedirectUrlMatcher { postLogoutRedirectUrl: String, configuredUrl: String? ->
+            alaCasProperties.logout.allowedPatterns.any { it.matcher(postLogoutRedirectUrl).matches() } ||
+                    postLogoutRedirectUrl.equals(configuredUrl, ignoreCase = true)
+        }
+    }
+
     @Bean("oauthTokenGenerator")
     @RefreshScope(proxyMode = ScopedProxyMode.DEFAULT)
     fun oauthTokenGenerator(

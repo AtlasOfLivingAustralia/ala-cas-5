@@ -3,36 +3,44 @@ package au.org.ala.cas.delegated
 import au.org.ala.cas.booleanAttribute
 import au.org.ala.cas.webflow.ExtraAttributesService
 import au.org.ala.utils.logger
-import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.apereo.cas.authentication.Credential
 import org.apereo.cas.authentication.exceptions.AccountDisabledException
 import org.apereo.cas.authentication.principal.*
+import org.apereo.cas.web.flow.DelegatedClientAuthenticationConfigurationContext
 import org.apereo.services.persondir.IPersonAttributeDao
-import org.apereo.services.persondir.support.CachingPersonAttributeDaoImpl
+import org.pac4j.core.profile.UserProfile
+import org.springframework.webflow.execution.RequestContext
 import javax.security.auth.login.FailedLoginException
 
-class AlaPrincipalFactory(
+class AlaDelegatedClientAuthenticationCredentialResolver(
+    configContext: DelegatedClientAuthenticationConfigurationContext,
     private val principalResolver: PrincipalResolver,
     private val cachingAttributeRepository: IPersonAttributeDao, //CachingPersonAttributeDaoImpl,
     val userCreator: UserCreator,
     val extraAttributesService: ExtraAttributesService
-) : PrincipalFactory {
+): BaseDelegatedClientAuthenticationCredentialResolver(configContext) {
 
     companion object {
-        private const val serialVersionUID: Long = -3999695695604948495L
-
         private val log = logger()
 
         const val NEW_LOGIN: String = "newLogin"
         val EMAIL_PATTERN = Regex("^.+@.+\\..+$")
     }
 
-    override fun createPrincipal(id: String) = createAlaPrincipal(id, emptyMap())
-//String id, Map<String, List<Object>> attributes
-    override fun createPrincipal(id: String, attributes: Map<String, List<Any>>) = createAlaPrincipal(id, attributes)
+    override fun resolve(
+        context: RequestContext?,
+        credentials: ClientCredential?
+    ): MutableList<DelegatedAuthenticationCandidateProfile> {
+        val profile = resolveUserProfile(context, credentials)
+        return profile.map { p ->
+            mutableListOf(createAlaPrincipal(p))
+        }.orElse(mutableListOf())
+    }
 
-    private fun createAlaPrincipal(id: String, attributes: Map<String, List<Any>>): Principal {
-        val attributeParser = AttributeParser.create(id, attributes)
+    private fun createAlaPrincipal(profile: UserProfile): DelegatedAuthenticationCandidateProfile {
+        val id = profile.id
+        val attributes = profile.attributes
+        val attributeParser = AttributeParser.create(profile)
         val email = attributeParser.findEmail()
         log.debug("email : {}", email)
 
@@ -69,7 +77,7 @@ class AlaPrincipalFactory(
             if (firstName != null && lastName != null) {
                 // if no userId parameter is returned then no db entry was created
                 val userId = userCreator.createUser(emailAddress, firstName, lastName)
-                        ?: throw FailedLoginException("Unable to create user for $emailAddress, $firstName, $lastName")
+                    ?: throw FailedLoginException("Unable to create user for $emailAddress, $firstName, $lastName")
                 log.debug("Received new user id {}", userId)
 
                 // invalidate cache for the newly created user
@@ -93,26 +101,17 @@ class AlaPrincipalFactory(
         }
         // Save delegated id for future work
         extraAttributesService.addDelegatedId(principal, id, attributes)
-        // The PAC4j client support expects a principal with the same id as the input principal, so return a new
-        // principal with the input id and the attributes from the db.
-        return DefaultPrincipalFactory().createPrincipal(id, principal.attributes)
+
+        return DelegatedAuthenticationCandidateProfile.builder()
+            .id(id)
+            .linkedId(principal.id)
+            .attributes(principal.attributes as Map<String, Any>?)
+            .build()
+//        return DefaultPrincipalFactory().createPrincipal(id, principal.attributes)
     }
 
     internal fun validatePrincipalALA(principal: Principal?) =
         principal != null && principal.attributes != null && principal.attributes.containsKey("userid")
 
 
-    override fun equals(other: Any?): Boolean {
-        if (other == null) {
-            return false
-        }
-        if (other === this) {
-            return true
-        }
-        return other.javaClass == javaClass
-    }
-
-    override fun hashCode(): Int {
-        return HashCodeBuilder(13, 37).toHashCode()
-    }
 }
