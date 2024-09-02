@@ -9,7 +9,9 @@ import org.apereo.cas.oidc.web.controllers.logout.OidcPostLogoutRedirectUrlMatch
 import org.apereo.cas.support.oauth.authenticator.OAuth20CasAuthenticationBuilder
 import org.apereo.cas.support.oauth.profile.OAuth20ProfileScopeToAttributesFilter
 import org.apereo.cas.support.oauth.web.OAuth20RequestParameterResolver
+import org.apereo.cas.support.oauth.web.endpoints.OAuth20ConfigurationContext
 import org.apereo.cas.support.oauth.web.response.accesstoken.OAuth20TokenGenerator
+import org.apereo.cas.support.oauth.web.response.accesstoken.ext.AccessTokenClientCredentialsGrantRequestExtractor
 import org.apereo.cas.ticket.accesstoken.OAuth20AccessTokenFactory
 import org.apereo.cas.ticket.device.OAuth20DeviceTokenFactory
 import org.apereo.cas.ticket.device.OAuth20DeviceUserCodeFactory
@@ -68,4 +70,10 @@ class OidcConfiguration {
         return OidcDefaultCasAuthenticationBuilder(oauthPrincipalFactory, webApplicationServiceFactory,
             profileScopeToAttributesFilter, requestParameterResolver, casProperties)
     }
+    
+    @Bean("accessTokenClientCredentialsGrantRequestExtractor")
+    fun accessTokenClientCredentialsGrantRequestExtractor(oAuthConfigurationContext: OAuth20ConfigurationContext): AccessTokenClientCredentialsGrantRequestExtractor {
+        return AlaAccessTokenClientCredentialsGrantRequestExtractor(oAuthConfigurationContext)
+    }
+    
 }
