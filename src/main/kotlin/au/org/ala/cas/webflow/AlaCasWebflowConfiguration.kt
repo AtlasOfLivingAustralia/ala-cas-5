@@ -1,6 +1,7 @@
 package au.org.ala.cas.webflow
 
 import au.org.ala.cas.AlaCasProperties
+import au.org.ala.cas.jdbc.AlaUserJdbcService
 import au.org.ala.utils.logger
 import org.apereo.cas.authentication.principal.ServiceFactory
 import org.apereo.cas.authentication.principal.WebApplicationService
@@ -99,7 +100,10 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
 //    lateinit var webApplicationServiceFactory: ServiceFactory<WebApplicationService>
 
     @Bean
-    fun extraAttributesService() = ExtraAttributesService(alaCasProperties, userCreatorDataSource, userCreatorTransactionManager, cachingAttributeRepository, messageSource)
+    fun alaUserJdbcService() = AlaUserJdbcService(alaCasProperties, userCreatorDataSource, userCreatorTransactionManager)
+
+    @Bean
+    fun extraAttributesService() = ExtraAttributesService(alaCasProperties, alaUserJdbcService(), cachingAttributeRepository, messageSource)
 
     @Bean
     @RefreshScope
@@ -140,7 +144,7 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
     @Qualifier(AlaCasWebflowConfigurer.ACTION_UPDATE_PASSWORD)
     fun updatePasswordAction(): Action = UpdatePasswordAction(
         alaCasProperties, PasswordEncoderUtils.newPasswordEncoder(alaCasProperties.userCreator.passwordEncoder, applicationContext),
-        userCreatorDataSource, userCreatorTransactionManager
+        alaUserJdbcService()
     )
 
 //    @RefreshScope
@@ -158,7 +162,7 @@ class AlaCasWebflowConfiguration : CasWebflowExecutionPlanConfigurer {
 
     @Bean
     @Qualifier(AlaCasWebflowConfigurer.DECISION_ID_SURVEY)
-    fun decisionSurveyAction() = DecisionSurveyAction(alaCasProperties, userCreatorDataSource)
+    fun decisionSurveyAction() = DecisionSurveyAction(alaCasProperties, alaUserJdbcService())
 
     @Bean
     @Qualifier(AlaCasWebflowConfigurer.STATE_ID_SAVE_SURVEY_ACTION)
