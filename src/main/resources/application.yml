@@ -141,7 +141,7 @@ cas:
             characterEncoding: UTF-8
             strength: 10
         - dataSourceName: java:comp/env/jdbccas
-          sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, TRUE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' WHERE u.username = ?;
+          sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, TRUE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' AND p.type <> 'bcrypt' WHERE u.username = ?;
           fieldPassword: password
           fieldDisabled: disabled
 #          fieldExpired: expired

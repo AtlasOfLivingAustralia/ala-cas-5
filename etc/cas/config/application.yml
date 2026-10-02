@@ -54,7 +54,7 @@ jndi:
   hikari:
     jdbccas:
       name: jdbccas
-      driverClass: com.mysql.jdbc.Driver
+      driverClass: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://localhost/cas[?serverTimezone=Australia/Sydney]
       user: username
       password: password
@@ -62,6 +62,8 @@ jndi:
         cachePrepStmts: true
         prepStmtCacheSize: 250
         prepStmtCacheSqlLimit: 2048
+        nullCatalogMeansCurrent: true
+        nullNamePatternMatchesAll: true
 
 flyway:
   url: jdbc:mysql://localhost/cas[?serverTimezone=Australia/Sydney]

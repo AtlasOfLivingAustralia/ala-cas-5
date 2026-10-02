@@ -1,6 +1,6 @@
 DROP PROCEDURE IF EXISTS `sp_get_user_attributes`;
 DELIMITER //
-CREATE PROCEDURE `sp_get_user_attributes`(p_username varchar(255))
+CREATE PROCEDURE `sp_get_user_attributes`(p_username varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci)
   BEGIN
     SELECT 'email' AS 'key', email AS 'value' FROM users WHERE username=p_username
     UNION SELECT 'username' AS 'key', username AS 'value' FROM users WHERE username=p_username
