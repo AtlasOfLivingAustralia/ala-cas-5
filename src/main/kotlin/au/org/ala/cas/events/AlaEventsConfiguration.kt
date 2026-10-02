@@ -1,6 +1,7 @@
 package au.org.ala.cas.events
 
 import au.org.ala.cas.AlaCasProperties
+import au.org.ala.cas.jdbc.AlaUserJdbcService
 import org.apereo.cas.configuration.support.JpaBeans
 import org.apereo.services.persondir.IPersonAttributeDao
 import org.apereo.services.persondir.support.CachingPersonAttributeDaoImpl
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -28,7 +30,8 @@ class AlaEventsConfiguration {
     fun alaCasEventListener(
         @Autowired @Qualifier("cachingAttributeRepository") cachingAttributeRepository: IPersonAttributeDao
     ): AlaCasEventListener {
-        return AlaCasEventListener(JpaBeans.newDataSource(alaCasProperties.userCreator.jdbc), alaCasProperties.userCreator.jdbc.updateLastLoginTimeSql, lastLoginExecutor(), cachingAttributeRepository)
+        val dataSource = JpaBeans.newDataSource(alaCasProperties.userCreator.jdbc)
+        val jdbcService = AlaUserJdbcService(alaCasProperties, dataSource, DataSourceTransactionManager(dataSource))
+        return AlaCasEventListener(jdbcService, lastLoginExecutor(), cachingAttributeRepository)
     }
 }
-
