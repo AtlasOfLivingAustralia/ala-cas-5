@@ -100,16 +100,12 @@ class ExtraAttributesService(
             if (dbKey != null) {
                 val dbValue = typedId.substringAfter(Pac4jConstants.TYPED_ID_SEPARATOR)
 
-                transactionTemplate.execute { status ->
-                    try {
-                        val template = NamedParameterJdbcTemplate(dataSource)
-                        updateField(template, dbId, dbKey, dbValue)
-                    } catch (e: Exception) {
-                        // If we can't save the survey, just log and move on because we don't want to
-                        // prevent the user from actually logging in
-                        log.warn("Rolling back transaction because of exception", e)
-                        status.setRollbackOnly()
-                    }
+                try {
+                    updateField(dbId, dbKey, dbValue)
+                } catch (e: Exception) {
+                    // If we can't save the delegated id, just log and move on because we don't want to
+                    // prevent the user from actually logging in
+                    log.warn("Couldn't save delegated id {} for {}", dbKey, dbId, e)
                 }
             } else {
                 log.error("Aborting due to unsupported profile type in typed id: $typedId")
