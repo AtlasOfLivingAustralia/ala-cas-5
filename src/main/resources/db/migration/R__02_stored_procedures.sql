@@ -37,14 +37,14 @@ DELIMITER ;
 DROP PROCEDURE IF EXISTS `sp_create_user`;
 DELIMITER //
 CREATE PROCEDURE `sp_create_user`(
-  IN `email`              varchar(255),
-  IN `firstname`          varchar(255),
-  IN `lastname`           varchar(255),
-  IN `password`           varchar(255),
-  IN `organisation`       varchar(255),
-  IN `city`               varchar(255),
-  IN `state`              varchar(255),
-  IN `country`            varchar(255),
+  IN `email`              varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `firstname`          varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `lastname`           varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `password`           varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `organisation`       varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `city`               varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `state`              varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  IN `country`            varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   OUT `user_id`            int(11))
   BEGIN
     DECLARE new_id int(11);

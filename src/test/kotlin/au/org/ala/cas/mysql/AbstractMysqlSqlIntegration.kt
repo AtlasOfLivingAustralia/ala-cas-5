@@ -44,6 +44,7 @@ abstract class AbstractMysqlSqlIntegration(
             assertAttributeStoredProcedure(jdbc)
             assertOverlayProfileAndPasswordService(jdbc, userJdbcService)
             assertLastLoginServiceAndUserCreation(jdbc, userJdbcService, properties)
+            assertUserCreationKeepsNonLatinCharacters(jdbc, properties)
         }
     }
 
@@ -78,15 +79,19 @@ abstract class AbstractMysqlSqlIntegration(
     }
 
     private fun cleanAndMigrate(dataSource: DataSource) {
-        Flyway.configure()
+        val flyway = Flyway.configure()
             .dataSource(dataSource)
             .locations("classpath:db/migration")
             .cleanDisabled(false)
             .load()
-            .run {
-                clean()
-                migrate()
-            }
+        flyway.clean()
+        // Production's emmet database defaults to latin1, and stored routine parameters declared without a
+        // character set take the database default when they are created. Recreate that here so charset
+        // regressions in the routines show up on every MySQL version (8.x would otherwise default to utf8mb4).
+        val jdbc = JdbcTemplate(dataSource)
+        val database = jdbc.queryForObject("SELECT DATABASE()", String::class.java)
+        jdbc.execute("ALTER DATABASE `$database` CHARACTER SET latin1 COLLATE latin1_swedish_ci")
+        flyway.migrate()
     }
 
     private fun dataSource(jdbcUrl: String, username: String, password: String): DataSource = MysqlDataSource().apply {
@@ -97,7 +102,7 @@ abstract class AbstractMysqlSqlIntegration(
 
     private fun jdbcUrl(baseUrl: String): String {
         val separator = if (baseUrl.contains('?')) '&' else '?'
-        return "${baseUrl}${separator}serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&nullNamePatternMatchesAll=true"
+        return "${baseUrl}${separator}serverTimezone=UTC&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&nullNamePatternMatchesAll=true"
     }
 
     private fun assertVersion(jdbc: JdbcTemplate, local: Boolean) {
@@ -173,6 +178,31 @@ abstract class AbstractMysqlSqlIntegration(
         assertEquals(1, userJdbcService.updateLastLogin(userid!!))
         assertNotNull(jdbc.queryForObject("SELECT last_login FROM users WHERE userid = ?", java.sql.Timestamp::class.java, userid))
         assertEquals("ROLE_USER", jdbc.queryForObject("SELECT role_id FROM user_role WHERE user_id = ?", String::class.java, userid))
+    }
+
+    // Social/delegated sign-in creates users through sp_create_user. Names outside latin1 (Cyrillic, CJK,
+    // 4-byte characters such as emoji) must be stored intact and be found again by sp_get_user_attributes.
+    private fun assertUserCreationKeepsNonLatinCharacters(jdbc: JdbcTemplate, properties: AlaCasProperties) {
+        val creator = UserCreatorALA(dataSource = jdbc.dataSource!!, createUserProcedure = properties.userCreator.jdbc.createUserProcedure, userCreatePassword = "password")
+        val email = "анна-${System.nanoTime()}@example.org"
+        val firstName = "Анна"
+        val lastName = "张伟 \uD83C\uDF3F"
+
+        val userid = creator.createUser(email, firstName, lastName)
+        assertNotNull(userid)
+
+        val stored = jdbc.queryForMap("SELECT username, email, firstname, lastname FROM users WHERE userid = ?", userid)
+        assertEquals(email, stored["username"])
+        assertEquals(email, stored["email"])
+        assertEquals(firstName, stored["firstname"])
+        assertEquals(lastName, stored["lastname"])
+
+        val attributes = jdbc.query("call sp_get_user_attributes(?)", { ps -> ps.setString(1, email) }) { rs, _ ->
+            rs.getString("key") to rs.getString("value")
+        }.toMap()
+        assertEquals(email, attributes["email"])
+        assertEquals(firstName, attributes["givenName"])
+        assertEquals(lastName, attributes["sn"])
     }
 
     private fun createUser(jdbc: JdbcTemplate, username: String): Long {
