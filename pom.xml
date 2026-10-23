@@ -818,10 +818,11 @@
             <!--<artifactId>jQuery-Autocomplete</artifactId>-->
             <!--<version>1.2.7</version>-->
         <!--</dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.webjars</groupId>-->
-<!--            <artifactId>headjs</artifactId>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.webjars</groupId>
+            <artifactId>headjs</artifactId>
+            <version>1.0.3</version>
+        </dependency>
         <dependency>
             <groupId>org.webjars</groupId>
             <artifactId>font-awesome</artifactId>
