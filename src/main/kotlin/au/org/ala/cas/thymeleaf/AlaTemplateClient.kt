@@ -45,8 +45,12 @@ class AlaTemplateClient(
             null
         }
 
-        if (cached == null || cached.isBlank()) {
-            log.error("Got a blank cached template value: {}", cached)
+        if (cached == null) {
+            return null
+        }
+        if (cached.isBlank()) {
+            // A blank template is valid (e.g. ALA's head.html is empty): fall back to the local fragment.
+            log.debug("Got a blank {} template, using the local fragment", name)
             return null
         }
         val loggedIn = isLoggedIn()
