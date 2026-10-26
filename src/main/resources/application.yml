@@ -128,7 +128,8 @@ cas:
 #        - location: classpath:scripts/attribute-repo.groovy
     jdbc:
       query:
-        - dataSourceName: java:comp/env/jdbccas
+        - name: AlaJdbcBcrypt
+          dataSourceName: java:comp/env/jdbccas
           sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, FALSE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' AND p.type = 'bcrypt' WHERE u.username = ?;
           fieldPassword: password
           fieldDisabled: disabled
@@ -140,7 +141,8 @@ cas:
             type: BCRYPT
             characterEncoding: UTF-8
             strength: 10
-        - dataSourceName: java:comp/env/jdbccas
+        - name: AlaJdbcLegacy
+          dataSourceName: java:comp/env/jdbccas
           sql: SELECT p.password as password, not u.activated or u.locked as disabled, COALESCE(p.expiry < CURRENT_TIMESTAMP(), 0) as expired, TRUE as legacy_password FROM passwords p JOIN users u ON u.userid = p.userid AND p.status = 'CURRENT' AND p.type <> 'bcrypt' WHERE u.username = ?;
           fieldPassword: password
           fieldDisabled: disabled
