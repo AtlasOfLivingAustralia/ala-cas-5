@@ -8,7 +8,8 @@ class AlaDialect(val alaTemplateClient: AlaTemplateClient) : AbstractProcessorDi
     override fun getProcessors(dialectPrefix: String): MutableSet<IProcessor> {
         return mutableSetOf(
             AlaHeaderFooterTagProcessor(dialectPrefix, "banner", alaTemplateClient),
-            AlaHeaderFooterTagProcessor(dialectPrefix, "footer", alaTemplateClient)
+            AlaHeaderFooterTagProcessor(dialectPrefix, "footer", alaTemplateClient),
+            AlaHeaderFooterTagProcessor(dialectPrefix, "head", alaTemplateClient)
         )
     }
 
