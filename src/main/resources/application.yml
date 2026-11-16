@@ -421,4 +421,13 @@ ala:
   logout:
     allowed-patterns:
       - https://www.ala.org.au/.*
+  audit:
+    mongo:
+      # Index the CAS audit collection on start up. CAS queries it on every authentication
+      # attempt (the throttle) but never indexes it, so without this every login ends up
+      # scanning the whole collection.
+      indexes-enabled: true
+      # Days of audit trail to keep, enforced with a TTL index. 0 keeps everything: the audit
+      # trail is personal data and the retention period is each institution's policy to set.
+      retention-days: 0
 debug: false

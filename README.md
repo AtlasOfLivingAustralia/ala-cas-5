@@ -112,6 +112,30 @@ order and will be re-run anytime the file changes.
 **NOTE** *Always* test migrations before running them on the production database.  *TODO* Investigate how to run 
 migrations from the command line.
 
+## Mongo audit repository indexes
+
+When the CAS audit trail is stored in MongoDb (`cas.audit.mongo.*`), CAS reads that collection on
+every authentication attempt, from the Mongo authentication throttle, but never indexes it:
+Apereo's `MongoDbAuditTrailManager` only saves and reads records. Once the collection grows, every
+login becomes a collection scan that outlasts the client's socket read timeout
+(`cas.audit.mongo.timeout`, or `socketTimeoutMS` in the client URI) and 500s on `/cas/login`.
+
+`au.org.ala.cas.mongo.AuditMongoIndexConfiguration` creates the index the throttle query needs,
+on start up and idempotently, next to the ticket registry indexes of
+`au.org.ala.cas.mongo.MongoIndexConfiguration`. It runs after the application is up, in a
+background thread: building the index over a collection of millions of audit records takes tens of
+seconds, and CAS should be serving logins in the meantime. If it cannot finish, the next start
+retries.
+
+| Property | Default | Meaning |
+| --- | --- | --- |
+| `ala.audit.mongo.indexes-enabled` | `true` | Index the audit collection on start up |
+| `ala.audit.mongo.retention-days` | `0` | Days of audit trail to keep, enforced with a TTL index. `0` keeps everything |
+
+Retention is off by default on purpose: the audit trail is personal data and the retention period
+is each institution's policy to set. Turning it on over an already-large collection purges the
+backlog in the background, so do it off-peak.
+
 ## Attributes
 
 ALA CAS 5 adds additional attributes to the CAS assertion compared to previous versions.  It adds `inetOrgPerson` style 
