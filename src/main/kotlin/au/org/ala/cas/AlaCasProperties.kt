@@ -14,6 +14,7 @@ open class AlaCasProperties(
     @field:NestedConfigurationProperty val skin: SkinProperties = SkinProperties(),
     @field:NestedConfigurationProperty val rest: RestProperties = RestProperties(),
     @field:NestedConfigurationProperty val logout: LogoutProperties = LogoutProperties(),
+    @field:NestedConfigurationProperty val audit: AuditProperties = AuditProperties(),
 ) {
     lateinit var userDetailsBaseUrl: String
 
@@ -80,6 +81,25 @@ open class AlaAuthCookieProperties : CookieProperties() {
     var rememberMeMaxAge: String = "P14D"
     var quoteValue: Boolean = true
     var urlEncodeValue: Boolean = false
+}
+
+open class AuditProperties(
+    @field:NestedConfigurationProperty val mongo: AuditMongoProperties = AuditMongoProperties(),
+)
+
+/**
+ * Indexing of the CAS audit repository when it is stored in MongoDb.
+ * See au.org.ala.cas.mongo.AuditMongoIndexService.
+ */
+open class AuditMongoProperties {
+    /** Whether to index the audit collection on start up. */
+    var indexesEnabled: Boolean = true
+
+    /**
+     * Days of audit trail to keep, enforced with a TTL index. 0 (the default) keeps everything:
+     * the audit trail is personal data and the retention period is each institution's policy to set.
+     */
+    var retentionDays: Int = 0
 }
 
 open class RestProperties {
